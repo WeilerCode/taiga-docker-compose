@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    restart: always
+    networks:
+      - taiga
+    volumes:
+      - ./:/www/:rw
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8081:80
+      - 44301:443
+    depends_on:
+      - taiga-back
+
+  taiga-back:
+    image: taiga-back:python-3.6-alpine
+    build: ./back
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: always
+    env_file: .env
+    volumes:
+      - ./back/src/:/taiga-back/:rw
+      - ./back/local.py:/taiga-back/settings/local.py
+      - ./back/init.sh:/taiga-back/init.sh
+    networks: 
+      - taiga
+    depends_on:
+      - taiga-sql
+
+  taiga-rabbitmq:
+    image: rabbitmq:management-alpine
+    env_file: .env
+    restart: always
+    networks:
+      - taiga
+
+  taiga-event:
+    image: taiga-event:node-8.16-alpine
+    build: ./event
+    restart: always
+    volumes:
+      - ./event/config.json:/taiga-event/config.json
+    networks: 
+      - taiga
+
+  taiga-sql:
+    image: postgres:12-alpine
+    restart: always
+    env_file: .env
+    networks: 
+      - taiga
+    volumes:
+      - taiga_sql:/var/lib/postgresql/data
+
+networks:
+  taiga:
+volumes:
+  taiga_sql:
