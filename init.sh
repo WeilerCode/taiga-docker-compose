@@ -5,10 +5,10 @@ workdir=$(cd `dirname $0`; pwd)
 
 cd back
 echo "Clone taiga back..."
-git clone https://github.com/taigaio/taiga-back.git src
+git clone -b 4.2.15 --depth 1 https://github.com/taigaio/taiga-back.git src
 echo "Clone taiga front..."
 cd ../front
-git clone https://github.com/taigaio/taiga-front-dist.git src
+git clone -b 4.2.14-stable --depth 1 https://github.com/taigaio/taiga-front-dist.git src
 echo "Clone taiga events..."
 cd ../event
 git clone https://github.com/taigaio/taiga-events.git src
